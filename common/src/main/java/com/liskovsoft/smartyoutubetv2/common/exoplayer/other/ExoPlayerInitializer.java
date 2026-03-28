@@ -163,6 +163,21 @@ public class ExoPlayerInitializer {
         }
     }
 
+    /**
+     * Enable or disable audio focus management on an already-created player.<br/>
+     * Call with {@code false} when entering background/PIP mode to prevent audio focus
+     * loss from stopping playback, and with {@code true} when returning to foreground.
+     */
+    public static void enableAudioFocus(SimpleExoPlayer player, boolean enable) {
+        if (player != null) {
+            try {
+                player.setAudioAttributes(getAudioAttributes(), enable);
+            } catch (SecurityException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     private void applyPlaybackFixes(SimpleExoPlayer player) {
         // Try to fix decoder error on Nvidia Shield 2019.
         // Init resources as early as possible.
