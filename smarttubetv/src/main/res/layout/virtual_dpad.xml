@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <!-- Back -->
+    <TextView
+        android:id="@+id/dpad_back"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_gravity="top|end"
+        android:gravity="center"
+        android:text="✕"
+        android:textSize="24sp"
+        android:textColor="#AAFFFFFF"
+        android:background="@drawable/dpad_button_bg"
+        android:focusable="false"
+        android:focusableInTouchMode="false" />
+
+    <!-- Cross layout offset below back button -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginTop="72dp"
+        android:orientation="vertical">
+
+        <!-- Up -->
+        <FrameLayout
+            android:layout_width="192dp"
+            android:layout_height="64dp">
+            <TextView
+                android:id="@+id/dpad_up"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_gravity="center_horizontal"
+                android:gravity="center"
+                android:text="▲"
+                android:textSize="24sp"
+                android:textColor="#AAFFFFFF"
+                android:background="@drawable/dpad_button_bg"
+                android:focusable="false"
+                android:focusableInTouchMode="false" />
+        </FrameLayout>
+
+        <!-- Left / Center / Right -->
+        <LinearLayout
+            android:layout_width="192dp"
+            android:layout_height="64dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/dpad_left"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:gravity="center"
+                android:text="◄"
+                android:textSize="24sp"
+                android:textColor="#AAFFFFFF"
+                android:background="@drawable/dpad_button_bg"
+                android:focusable="false"
+                android:focusableInTouchMode="false" />
+
+            <TextView
+                android:id="@+id/dpad_center"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:gravity="center"
+                android:text="●"
+                android:textSize="24sp"
+                android:textColor="#AAFFFFFF"
+                android:background="@drawable/dpad_button_bg"
+                android:focusable="false"
+                android:focusableInTouchMode="false" />
+
+            <TextView
+                android:id="@+id/dpad_right"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:gravity="center"
+                android:text="►"
+                android:textSize="24sp"
+                android:textColor="#AAFFFFFF"
+                android:background="@drawable/dpad_button_bg"
+                android:focusable="false"
+                android:focusableInTouchMode="false" />
+        </LinearLayout>
+
+        <!-- Down -->
+        <FrameLayout
+            android:layout_width="192dp"
+            android:layout_height="64dp">
+            <TextView
+                android:id="@+id/dpad_down"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_gravity="center_horizontal"
+                android:gravity="center"
+                android:text="▼"
+                android:textSize="24sp"
+                android:textColor="#AAFFFFFF"
+                android:background="@drawable/dpad_button_bg"
+                android:focusable="false"
+                android:focusableInTouchMode="false" />
+        </FrameLayout>
+
+    </LinearLayout>
+
+</FrameLayout>

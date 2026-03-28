@@ -2,8 +2,11 @@ package com.liskovsoft.smartyoutubetv2.tv.ui.common;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.KeyEvent;
+import android.widget.FrameLayout;
 
+import com.liskovsoft.sharedutils.helpers.Helpers;
 import com.liskovsoft.sharedutils.mylogger.Log;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.SearchPresenter;
 import com.liskovsoft.smartyoutubetv2.common.autoframerate.ModeSyncManager;
@@ -16,6 +19,7 @@ import com.liskovsoft.smartyoutubetv2.common.utils.Utils;
 import com.liskovsoft.smartyoutubetv2.tv.ui.common.keyhandler.DoubleBackManager2;
 import com.liskovsoft.smartyoutubetv2.tv.ui.playback.PlaybackActivity;
 import com.liskovsoft.smartyoutubetv2.tv.ui.search.tags.SearchTagsActivity;
+import com.liskovsoft.smartyoutubetv2.tv.ui.widgets.dpad.VirtualDpadView;
 
 /**
  * This parent class contains common methods that run in every activity such as search.
@@ -38,6 +42,31 @@ public abstract class LeanbackActivity extends MotherActivity {
                 new PlayerKeyTranslator(this) :
                 new GlobalKeyTranslator(this);
         mGlobalKeyTranslator.apply();
+    }
+
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        if (Helpers.isTouchSupported(this) && !(this instanceof PlaybackActivity)) {
+            addVirtualDpad();
+        }
+    }
+
+    private void addVirtualDpad() {
+        FrameLayout root = findViewById(android.R.id.content);
+        if (root == null) {
+            return;
+        }
+        VirtualDpadView dpad = new VirtualDpadView(this);
+        int margin = (int) (16 * getResources().getDisplayMetrics().density);
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                Gravity.BOTTOM | Gravity.END
+        );
+        params.bottomMargin = margin;
+        params.rightMargin = margin;
+        root.addView(dpad, params);
     }
 
     @Override
