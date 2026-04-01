@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- TwoRowControlBar splits into two rows, so icons can be comfortably larger than single-row portrait -->
+    <dimen name="lb_control_icon_width">44dp</dimen>
+    <dimen name="lb_playback_controls_time_text_size">13sp</dimen>
+    <dimen name="lb_playback_controls_child_margin_default">22dp</dimen>
+    <dimen name="lb_playback_transport_control_row_padding_bottom">18dp</dimen>
+    <dimen name="lb_playback_transport_control_info_margin_bottom">12dp</dimen>
+    <dimen name="lb_playback_transport_image_height">48dp</dimen>
+    <dimen name="lb_playback_transport_image_margin_end">12dp</dimen>
+    <dimen name="lb_playback_transport_thumbs_bottom_margin">10dp</dimen>
+    <dimen name="lb_playback_transport_progressbar_height">28dp</dimen>
+    <dimen name="lb_playback_transport_progressbar_bar_height">6dp</dimen>
+    <dimen name="lb_playback_transport_progressbar_active_bar_height">8dp</dimen>
+    <dimen name="lb_playback_transport_progressbar_active_radius">12dp</dimen>
+    <dimen name="lb_playback_transport_controlbar_margin_start">0dp</dimen>
+    <dimen name="lb_playback_transport_time_margin">4dp</dimen>
+</resources>

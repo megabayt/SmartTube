@@ -22,6 +22,14 @@
     <color name="card_default_background">#0096a6</color>
     <color name="card_default_background_dark">#004B53</color>
     <color name="card_default_text">#FFFFFF</color>
+    <color name="touch_surface_fill">#1A2126</color>
+    <color name="touch_surface_fill_active">#F3F6F8</color>
+    <color name="touch_surface_fill_alert">#7F1D1D</color>
+    <color name="touch_surface_border">#41505A</color>
+    <color name="touch_surface_border_active">#FFFFFF</color>
+    <color name="touch_surface_text_active">#101418</color>
+    <color name="touch_surface_hint">#A9B5BC</color>
+    <color name="touch_input_fill">#11181C</color>
 
     <!-- Browse fragment colors -->
     <color name="shelf_background">#282828</color>

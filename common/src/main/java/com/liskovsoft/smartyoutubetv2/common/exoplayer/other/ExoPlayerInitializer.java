@@ -88,6 +88,18 @@ public class ExoPlayerInitializer {
         return sAudioAttributes;
     }
 
+    public static void enableAudioFocus(SimpleExoPlayer player, boolean enable) {
+        if (player == null) {
+            return;
+        }
+
+        try {
+            player.setAudioAttributes(getAudioAttributes(), enable);
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * Increase player's min/max buffer size to 60 secs
      * @return load control
@@ -158,11 +170,7 @@ public class ExoPlayerInitializer {
      */
     private void setupAudioFocus(SimpleExoPlayer player) {
         if (player != null && mPlayerTweaksData.isAudioFocusEnabled()) {
-            try {
-                player.setAudioAttributes(getAudioAttributes(), true);
-            } catch (SecurityException e) { // uid 10390 not allowed to perform TAKE_AUDIO_FOCUS
-                e.printStackTrace();
-            }
+            enableAudioFocus(player, true);
         }
     }
 

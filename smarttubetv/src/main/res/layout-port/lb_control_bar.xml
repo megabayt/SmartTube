@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- MOD: intention to replace class name with custom one -->
-<com.liskovsoft.smartyoutubetv2.tv.ui.mod.leanback.playerglue.tweaks.ControlBar
+<!-- MOD: portrait two-row control bar -->
+<com.liskovsoft.smartyoutubetv2.tv.ui.mod.leanback.playerglue.tweaks.TwoRowControlBar
      xmlns:android="http://schemas.android.com/apk/res/android"
      android:id="@+id/control_bar"
-     android:layout_width="wrap_content"
+     android:layout_width="match_parent"
      android:layout_height="wrap_content"
      android:gravity="center_vertical"
      android:orientation="horizontal" />

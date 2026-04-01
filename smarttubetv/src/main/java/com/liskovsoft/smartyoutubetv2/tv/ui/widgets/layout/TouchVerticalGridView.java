@@ -2,72 +2,89 @@ package com.liskovsoft.smartyoutubetv2.tv.ui.widgets.layout;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import androidx.annotation.NonNull;
-import androidx.leanback.widget.VerticalGridView;
-import androidx.recyclerview.widget.RecyclerView;
-import com.liskovsoft.sharedutils.mylogger.Log;
+import android.view.MotionEvent;
+import android.view.ViewConfiguration;
 
-/**
- * NOT working!<br/>
- * lb_rows_fragment.xml<br/>
- * lb_vertical_grid.xml
- */
+import androidx.leanback.widget.VerticalGridView;
+
 public class TouchVerticalGridView extends VerticalGridView {
-    private static final String TAG = TouchVerticalGridView.class.getSimpleName();
+    private static final int AXIS_NONE = 0;
+    private static final int AXIS_VERTICAL = 1;
+    private static final int AXIS_HORIZONTAL = 2;
+
+    private final int mTouchSlop;
+    private float mDownX;
+    private float mDownY;
+    private int mLockedAxis;
 
     public TouchVerticalGridView(Context context) {
-        super(context);
-        init();
+        this(context, null);
     }
 
     public TouchVerticalGridView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init();
+        this(context, attrs, 0);
     }
 
     public TouchVerticalGridView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        init();
+        mTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
     }
 
-    private void init() {
-        addOnScrollListener(new OnScrollListener() {
-            private int mLastState;
-            private int mLastPosition;
-            private int mLastDy;
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        updateAxisLock(event);
 
-            @Override
-            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
-                mLastState = newState;
-            }
+        if (mLockedAxis == AXIS_HORIZONTAL) {
+            return true;
+        }
 
-            @Override
-            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
+        return super.dispatchTouchEvent(event);
+    }
 
-                if (mLastState != RecyclerView.SCROLL_STATE_DRAGGING || dy == 0) {
-                    return;
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent event) {
+        updateAxisLock(event);
+
+        if (mLockedAxis == AXIS_HORIZONTAL) {
+            return false;
+        }
+
+        return super.onInterceptTouchEvent(event);
+    }
+
+    private void updateAxisLock(MotionEvent event) {
+        switch (event.getActionMasked()) {
+            case MotionEvent.ACTION_DOWN:
+                mDownX = event.getX();
+                mDownY = event.getY();
+                mLockedAxis = AXIS_NONE;
+                break;
+            case MotionEvent.ACTION_MOVE:
+                if (mLockedAxis != AXIS_NONE) {
+                    break;
                 }
 
-                Log.d(TAG, dy);
+                float dx = event.getX() - mDownX;
+                float dy = event.getY() - mDownY;
 
-                int height = recyclerView.getLayoutManager().getChildAt(0).getHeight();
-
-                mLastDy += dy;
-
-                if (Math.abs(mLastDy) < (height / 2)) {
-                    return;
+                if (Math.abs(dx) < mTouchSlop && Math.abs(dy) < mTouchSlop) {
+                    break;
                 }
 
-                if (dy > 0) {
-                    recyclerView.smoothScrollToPosition(mLastPosition += 1);
-                } else {
-                    recyclerView.smoothScrollToPosition(mLastPosition -= 1);
+                mLockedAxis = Math.abs(dy) >= Math.abs(dx) ? AXIS_VERTICAL : AXIS_HORIZONTAL;
+                if (getParent() != null) {
+                    getParent().requestDisallowInterceptTouchEvent(mLockedAxis == AXIS_VERTICAL);
                 }
-
-                mLastDy = 0;
-            }
-        });
+                break;
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
+                mLockedAxis = AXIS_NONE;
+                if (getParent() != null) {
+                    getParent().requestDisallowInterceptTouchEvent(false);
+                }
+                break;
+            default:
+                break;
+        }
     }
 }

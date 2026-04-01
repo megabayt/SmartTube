@@ -15,6 +15,7 @@ import com.liskovsoft.sharedutils.mylogger.Log;
 import com.liskovsoft.smartyoutubetv2.common.app.models.playback.manager.PlayerEngine;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.AppDialogPresenter;
 import com.liskovsoft.smartyoutubetv2.common.app.views.PlaybackView;
+import com.liskovsoft.smartyoutubetv2.common.misc.RemoteControlService;
 import com.liskovsoft.smartyoutubetv2.common.prefs.GeneralData;
 import com.liskovsoft.smartyoutubetv2.common.prefs.MainUIData;
 import com.liskovsoft.smartyoutubetv2.common.prefs.PlayerData;
@@ -67,8 +68,8 @@ public class PlaybackActivity extends LeanbackActivity {
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
-        if (mPlaybackFragment != null) {
-            mPlaybackFragment.onDispatchTouchEvent(event);
+        if (mPlaybackFragment != null && mPlaybackFragment.onDispatchTouchEvent(event)) {
+            return true;
         }
 
         return super.dispatchTouchEvent(event);
@@ -129,13 +130,19 @@ public class PlaybackActivity extends LeanbackActivity {
     @TargetApi(24)
     @SuppressWarnings("deprecation")
     private void enterPipMode() {
+        enterPipMode(false);
+    }
+
+    @TargetApi(24)
+    @SuppressWarnings("deprecation")
+    private void enterPipMode(boolean force) {
         // NOTE: When exiting PIP mode onPause is called immediately after onResume
 
         // Also, avoid enter pip on stop!
         // More info: https://developer.android.com/guide/topics/ui/picture-in-picture#continuing_playback
 
         if (Helpers.isPictureInPictureSupported(this)) {
-            if (wannaEnterToPip()) {
+            if (wannaEnterToPip(force)) {
                 Log.d(TAG, "Entering PIP mode...");
 
                 try {
@@ -145,6 +152,7 @@ public class PlaybackActivity extends LeanbackActivity {
                     } else {
                         enterPictureInPictureMode();
                     }
+                    Utils.startService(this, RemoteControlService.class);
                 } catch (Exception e) {
                     // Device doesn't support picture-in-picture mode
                     Log.e(TAG, e.getMessage());
@@ -202,14 +210,19 @@ public class PlaybackActivity extends LeanbackActivity {
     @Override
     protected void onPause() {
         boolean hasDialogBug = AppDialogPresenter.instance(this).isDialogShown() && Build.VERSION.SDK_INT <= 23;
-        boolean isScreenOff = getPlayerData().getBackgroundMode() != PlayerData.BACKGROUND_MODE_DEFAULT && Utils.isHardScreenOff(this);
+        // PiP mode handles its own lifecycle; don't block the engine here or PiP will never start
+        boolean isPipBackground = getPlayerData().getBackgroundMode() == PlayerData.BACKGROUND_MODE_PIP;
+        boolean isScreenOff = !isPipBackground && getPlayerData().getBackgroundMode() != PlayerData.BACKGROUND_MODE_DEFAULT && Utils.isHardScreenOff(this);
+        boolean shouldBlockOnPause = hasDialogBug || (isScreenOff && !isInPipMode());
 
-        if (hasDialogBug || isScreenOff) {
+        if (shouldBlockOnPause) {
             mPlaybackFragment.blockEngine(true);
         }
 
         // Run the code before the contained fragment
         super.onPause();
+
+        maybeEnterPipOnBackground();
     }
 
     @Override
@@ -222,6 +235,7 @@ public class PlaybackActivity extends LeanbackActivity {
     protected void onResume() {
         mIsBackPressed = false;
         super.onResume();
+        Utils.updateRemoteControlService(this);
     }
 
     @SuppressWarnings("deprecation")
@@ -269,7 +283,7 @@ public class PlaybackActivity extends LeanbackActivity {
     public void onUserLeaveHint() {
         // Check that user not open dialog/search activity instead of really leaving the activity
         // Activity may be overlapped by the dialog, back is pressed or new view started
-        if (mIsBackPressed || isFinishing() || getViewManager().isNewViewPending() || getGeneralData().getBackgroundPlaybackShortcut() == GeneralData.BACKGROUND_PLAYBACK_SHORTCUT_BACK) {
+        if (!shouldEnterPipOnLeaveHint()) {
             return;
         }
 
@@ -279,7 +293,7 @@ public class PlaybackActivity extends LeanbackActivity {
                 // Do we need to do something additional when running Play Behind?
                 break;
             case PlayerData.BACKGROUND_MODE_PIP:
-                enterPipMode();
+                enterPipMode(true);
                 if (doNotDestroy()) {
                     mPlaybackFragment.blockEngine(true);
                     // Ensure to opening this activity when the user will return to the app
@@ -320,11 +334,12 @@ public class PlaybackActivity extends LeanbackActivity {
     }
 
     @TargetApi(24)
-    private boolean wannaEnterToPip() {
+    private boolean wannaEnterToPip(boolean force) {
         //return mPlaybackFragment != null && mPlaybackFragment.getBackgroundMode() == PlayerEngine.BACKGROUND_MODE_PIP && !isInPictureInPictureMode();
         //return mPlaybackFragment != null && mPlaybackFragment.isEngineBlocked() && !isInPictureInPictureMode();
         boolean isPip = getPlayerData().getBackgroundMode() == PlayerData.BACKGROUND_MODE_PIP || isEngineBlocked();
-        return isPip && !isInPictureInPictureMode();
+        boolean canForcePip = force && mPlaybackFragment != null && mPlaybackFragment.isPlaying();
+        return (isPip || canForcePip) && !isInPictureInPictureMode();
     }
 
     private boolean doNotDestroy() {
@@ -333,6 +348,34 @@ public class PlaybackActivity extends LeanbackActivity {
         //return sIsInPipMode || mPlaybackFragment.isEngineBlocked();
         boolean isBackground = getPlayerData().getBackgroundMode() == PlayerEngine.BACKGROUND_MODE_SOUND || isEngineBlocked();
         return sIsInPipMode || isBackground;
+    }
+
+    private void maybeEnterPipOnBackground() {
+        if (!shouldEnterPipOnBackground()) {
+            return;
+        }
+
+        if (!isInPipMode()) {
+            enterPipMode(true);
+        }
+    }
+
+    private boolean shouldEnterPipOnBackground() {
+        return !mIsBackPressed && shouldEnterPipCommon();
+    }
+
+    private boolean shouldEnterPipOnLeaveHint() {
+        return shouldEnterPipCommon();
+    }
+
+    private boolean shouldEnterPipCommon() {
+        return Helpers.isPictureInPictureSupported(this)
+                && mPlaybackFragment != null
+                && mPlaybackFragment.isPlaying()
+                && !isFinishing()
+                && !isChangingConfigurations()
+                && !getViewManager().isNewViewPending()
+                && !AppDialogPresenter.instance(this).isDialogShown();
     }
 
     //private boolean isBackgroundBackEnabled() {

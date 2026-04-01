@@ -90,8 +90,9 @@ public class VideoCardPresenter extends LongClickPresenter {
     }
 
     private void updateCardBackgroundColor(ComplexImageCardView view, boolean selected) {
-        int backgroundColor = selected ? mSelectedBackgroundColor : mDefaultBackgroundColor;
-        int textColor = selected ? mSelectedTextColor : mDefaultTextColor;
+        int textColor = selected ?
+                ContextCompat.getColor(view.getContext(), R.color.touch_surface_text_active) :
+                mDefaultTextColor;
 
         // Both background colors should be set because the view's
         // background is temporarily visible during animations.
@@ -100,7 +101,7 @@ public class VideoCardPresenter extends LongClickPresenter {
 
         View infoField = view.findViewById(R.id.info_field);
         if (infoField != null) {
-            infoField.setBackgroundColor(backgroundColor);
+            infoField.setBackgroundResource(selected ? R.drawable.touch_tile_selected : R.drawable.touch_tile_default);
         }
 
         TextView titleText = view.findViewById(R.id.title_text);
