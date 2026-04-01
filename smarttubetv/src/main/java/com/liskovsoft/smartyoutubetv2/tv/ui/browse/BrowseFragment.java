@@ -96,6 +96,11 @@ public class BrowseFragment extends BrowseSupportFragment implements BrowseView 
 
         mProgressBarManager.setRootView((ViewGroup) root);
 
+        View navBtn = root.findViewById(R.id.floating_nav_btn);
+        if (navBtn != null) {
+            navBtn.setOnClickListener(v -> startHeadersTransitionSafe(true));
+        }
+
         return root;
     }
 
