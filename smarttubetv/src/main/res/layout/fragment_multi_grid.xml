@@ -23,7 +23,7 @@
         -->
 
         <!-- focusOutFront: allow navigating out from left side to the main menu. -->
-        <androidx.leanback.widget.HorizontalGridView
+        <com.liskovsoft.smartyoutubetv2.tv.ui.widgets.layout.TouchHorizontalGridView
             android:id="@+id/browse_grid_dock"
             lb:focusOutFront="true"
             lb:focusOutEnd="true"

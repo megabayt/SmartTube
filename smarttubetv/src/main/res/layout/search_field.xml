@@ -4,19 +4,26 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_gravity="center"
+    android:background="@drawable/touch_input_background"
     android:gravity="center"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:paddingStart="16dp"
+    android:paddingTop="8dp"
+    android:paddingEnd="16dp"
+    android:paddingBottom="8dp">
 
     <EditText
         android:id="@+id/simple_edit_value"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="56dp"
         android:autofillHints=""
+        android:background="@null"
+        android:gravity="center_vertical"
         android:hint="@string/channel_filter_hint"
         android:imeOptions="actionDone"
         android:inputType="textPersonName"
         android:textColor="@color/dialog_text_color"
         android:textCursorDrawable="@null"
-        android:backgroundTint="@color/dialog_text_color"
-        android:textColorHint="@color/white_50" />
+        android:textColorHint="@color/touch_surface_hint"
+        android:textSize="18sp" />
 </LinearLayout>

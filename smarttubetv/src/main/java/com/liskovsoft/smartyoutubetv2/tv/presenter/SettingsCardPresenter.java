@@ -37,22 +37,20 @@ public class SettingsCardPresenter extends Presenter {
 
         @SuppressLint("InflateParams")
         View container = LayoutInflater.from(context).inflate(R.layout.settings_card, null);
-        container.setBackgroundColor(mDefaultBackgroundColor);
+        container.setBackgroundResource(R.drawable.touch_tile_default);
         //if (VERSION.SDK_INT >= 23 && MainUIData.instance(context).isUiTweakEnabled(MainUIData.UI_TWEAK_ROUNDED_CORNERS)) {
         //    container.setForeground(ContextCompat.getDrawable(context, R.drawable.lb_card_outline));
         //}
 
         TextView textView = container.findViewById(R.id.settings_title);
-        textView.setBackgroundColor(mDefaultBackgroundColor);
         textView.setTextColor(mDefaultTextColor);
 
         ViewUtil.setTextScrollSpeed(textView, getCardTextScrollSpeed(context));
 
         container.setOnFocusChangeListener((v, hasFocus) -> {
-            int backgroundColor = hasFocus ? mSelectedBackgroundColor : mDefaultBackgroundColor;
-            int textColor = hasFocus ? mSelectedTextColor : mDefaultTextColor;
-            
-            textView.setBackgroundColor(backgroundColor);
+            int textColor = hasFocus ? ContextCompat.getColor(context, R.color.touch_surface_text_active) : mDefaultTextColor;
+
+            container.setBackgroundResource(hasFocus ? R.drawable.touch_tile_selected : R.drawable.touch_tile_default);
             textView.setTextColor(textColor);
 
             if (hasFocus) {
@@ -78,6 +76,10 @@ public class SettingsCardPresenter extends Presenter {
             ImageView imageView = viewHolder.view.findViewById(R.id.settings_image);
             imageView.setImageDrawable(ContextCompat.getDrawable(context, settingsItem.imageResId));
             imageView.setVisibility(View.VISIBLE);
+        } else {
+            ImageView imageView = viewHolder.view.findViewById(R.id.settings_image);
+            imageView.setImageDrawable(null);
+            imageView.setVisibility(View.INVISIBLE);
         }
     }
 

@@ -55,14 +55,14 @@ public class ChannelCardPresenter extends LongClickPresenter {
 
         @SuppressLint("InflateParams")
         View container = LayoutInflater.from(context).inflate(R.layout.channel_card, null);
-        container.setBackgroundColor(mDefaultBackgroundColor);
         //if (VERSION.SDK_INT >= 23 && MainUIData.instance(context).isUiTweakEnabled(MainUIData.UI_TWEAK_ROUNDED_CORNERS)) {
         //    container.setForeground(ContextCompat.getDrawable(context, R.drawable.lb_card_outline));
         //}
 
         TextView textView = container.findViewById(R.id.channel_title);
-        textView.setBackgroundColor(mDefaultBackgroundColor);
         textView.setTextColor(mDefaultTextColor);
+        View wrapper = container.findViewById(R.id.channel_card_wrapper);
+        wrapper.setBackgroundResource(R.drawable.touch_tile_default);
 
         boolean autoScrollEnabled = isCardTextAutoScrollEnabled(context);
         if (autoScrollEnabled) {
@@ -70,11 +70,11 @@ public class ChannelCardPresenter extends LongClickPresenter {
         }
 
         container.setOnFocusChangeListener((v, hasFocus) -> {
-            int backgroundColor = hasFocus ? mSelectedBackgroundColor :
-                    textView.getTag(R.id.channel_new_content) != null ? mNewContentBackgroundColor : mDefaultBackgroundColor;
-            int textColor = hasFocus ? mSelectedTextColor : mDefaultTextColor;
-            
-            textView.setBackgroundColor(backgroundColor);
+            boolean hasNewContent = textView.getTag(R.id.channel_new_content) != null;
+            int textColor = hasFocus ? ContextCompat.getColor(context, R.color.touch_surface_text_active) : mDefaultTextColor;
+
+            wrapper.setBackgroundResource(hasFocus ? R.drawable.touch_tile_selected :
+                    hasNewContent ? R.drawable.touch_tile_alert : R.drawable.touch_tile_default);
             textView.setTextColor(textColor);
 
             if (!autoScrollEnabled) {
@@ -104,8 +104,9 @@ public class ChannelCardPresenter extends LongClickPresenter {
         textView.setText(video.getTitle());
 
         // We should setup props each time because object may be reused by the underlying RecyclerView
-        textView.setBackgroundColor(video.hasNewContent ? mNewContentBackgroundColor : mDefaultBackgroundColor);
         textView.setTag(R.id.channel_new_content, video.hasNewContent ? true : null);
+        viewHolder.view.findViewById(R.id.channel_card_wrapper).setBackgroundResource(
+                video.hasNewContent ? R.drawable.touch_tile_alert : R.drawable.touch_tile_default);
 
 
         ImageView imageView = viewHolder.view.findViewById(R.id.channel_image);
@@ -124,6 +125,7 @@ public class ChannelCardPresenter extends LongClickPresenter {
         // Remove references to images so that the garbage collector can free up memory.
         ImageView imageView = viewHolder.view.findViewById(R.id.channel_image);
         imageView.setImageDrawable(null);
+        imageView.setVisibility(View.INVISIBLE);
     }
 
     private void updateDimensions(Context context) {

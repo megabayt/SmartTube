@@ -19,6 +19,7 @@ import com.liskovsoft.mediaserviceinterfaces.data.MediaItemFormatInfo;
 import com.liskovsoft.mediaserviceinterfaces.data.MediaSubtitle;
 import com.liskovsoft.sharedutils.helpers.Helpers;
 import com.liskovsoft.sharedutils.mylogger.Log;
+import com.liskovsoft.youtubeapi.service.internal.MediaServiceData;
 import com.liskovsoft.youtubeapi.formatbuilders.mpdbuilder.MediaFormatComparator;
 import com.liskovsoft.youtubeapi.formatbuilders.utils.ITagUtils;
 import com.liskovsoft.youtubeapi.formatbuilders.utils.MediaFormatUtils;
@@ -85,7 +86,7 @@ public class DashManifestParser2 {
                 null,
                 null,
                 null,
-                formatInfo.getVisitorCookie(),
+                MediaServiceData.instance().getVisitorCookie(),
                 periods);
     }
 

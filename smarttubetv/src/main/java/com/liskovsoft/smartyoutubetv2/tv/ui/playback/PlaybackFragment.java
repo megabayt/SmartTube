@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewConfiguration;
 import android.view.ViewStub;
 
 import androidx.annotation.NonNull;
@@ -125,6 +126,9 @@ public class PlaybackFragment extends SeekModePlaybackFragment implements Playba
     private Boolean mIsControlsShownPreviously;
     private Video mPendingFocus;
     private String mSelectedVideoId;
+    private float mTouchDownX;
+    private float mTouchDownY;
+    private boolean mTouchTapCandidate;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -217,7 +221,7 @@ public class PlaybackFragment extends SeekModePlaybackFragment implements Playba
     public void onStop() {
         super.onStop();
 
-        if (Util.SDK_INT > 23) {
+        if (Util.SDK_INT > 23 && !isInPIPMode()) {
             maybeReleasePlayer();
         }
     }
@@ -235,7 +239,7 @@ public class PlaybackFragment extends SeekModePlaybackFragment implements Playba
 
         showHideWidgets(true); // PIP mode fix
         blockEngine(false); // reset bg mode
-        //ExoPlayerInitializer.enableAudioFocus(mPlayer, true); // Restore focus after PIP
+        ExoPlayerInitializer.enableAudioFocus(mPlayer, !isInPIPMode());
     }
 
     @Override
@@ -250,22 +254,46 @@ public class PlaybackFragment extends SeekModePlaybackFragment implements Playba
         }
 
         showHideWidgets(false); // PIP mode fix
-        //ExoPlayerInitializer.enableAudioFocus(mPlayer, false); // Disable focus in PIP
+        // Disable audio focus when PiP is active OR about to be entered on background,
+        // so a screen-lock focus-loss event can't pause playback before PiP is confirmed.
+        PlayerData pd = getContext() != null ? getPlayerData() : null;
+        boolean pipPending = pd != null && pd.getBackgroundMode() == PlayerData.BACKGROUND_MODE_PIP;
+        ExoPlayerInitializer.enableAudioFocus(mPlayer, !isInPIPMode() && !pipPending);
     }
 
     public void onDispatchKeyEvent(KeyEvent event) {
         // NOP
     }
 
-    public void onDispatchTouchEvent(MotionEvent event) {
+    public boolean onDispatchTouchEvent(MotionEvent event) {
         if (mDoubleTapPlayerAdapter != null && !isOverlayShown()) {
             boolean handled = mDoubleTapPlayerAdapter.onTouchEvent(event);
 
-            if (handled)
-                return;
+            if (handled) {
+                resetTouchTapState(event);
+                return true;
+            }
+        }
+
+        updateTouchTapState(event);
+        boolean isTapUp = event.getActionMasked() == MotionEvent.ACTION_UP && mTouchTapCandidate;
+
+        if (isOverlayShown()) {
+            if (isTapUp && shouldHideOverlayByTap(event)) {
+                hideControlsOverlay(true);
+                mPlaybackPresenter.onKeyDown(-1);
+                resetTouchTapState(event);
+                return true;
+            }
+
+            mPlaybackPresenter.onKeyDown(-1);
+            resetTouchTapState(event);
+            return false;
         }
 
         applyTickle(event);
+        resetTouchTapState(event);
+        return false;
     }
 
     public void onDispatchGenericMotionEvent(MotionEvent event) {
@@ -284,6 +312,61 @@ public class PlaybackFragment extends SeekModePlaybackFragment implements Playba
         mPlaybackPresenter.onKeyDown(-1); // reset ui timer
     }
 
+    private void updateTouchTapState(MotionEvent event) {
+        switch (event.getActionMasked()) {
+            case MotionEvent.ACTION_DOWN:
+                mTouchDownX = event.getX();
+                mTouchDownY = event.getY();
+                mTouchTapCandidate = true;
+                break;
+            case MotionEvent.ACTION_MOVE:
+                if (getContext() == null) {
+                    mTouchTapCandidate = false;
+                    break;
+                }
+
+                int touchSlop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
+                if (Math.abs(event.getX() - mTouchDownX) > touchSlop || Math.abs(event.getY() - mTouchDownY) > touchSlop) {
+                    mTouchTapCandidate = false;
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void resetTouchTapState(MotionEvent event) {
+        int action = event.getActionMasked();
+
+        if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
+            mTouchTapCandidate = false;
+        }
+    }
+
+    private boolean shouldHideOverlayByTap(MotionEvent event) {
+        View root = getView();
+
+        if (root == null) {
+            return false;
+        }
+
+        View transportRow = root.findViewById(R.id.transport_row);
+
+        if (transportRow == null || transportRow.getVisibility() != View.VISIBLE) {
+            return true;
+        }
+
+        int[] location = new int[2];
+        transportRow.getLocationOnScreen(location);
+        float rawX = event.getRawX();
+        float rawY = event.getRawY();
+
+        return rawX < location[0]
+                || rawX > location[0] + transportRow.getWidth()
+                || rawY < location[1]
+                || rawY > location[1] + transportRow.getHeight();
+    }
+
     public void onFinish() {
         if (Util.SDK_INT > 23) {
             maybeReleasePlayer();
@@ -293,6 +376,15 @@ public class PlaybackFragment extends SeekModePlaybackFragment implements Playba
     }
 
     public void onPIPChanged(boolean isInPIP) {
+        if (isInPIP) {
+            // Disable audio focus while in PiP so system events (screen lock, notifications)
+            // can't steal focus and pause playback.
+            ExoPlayerInitializer.enableAudioFocus(mPlayer, false);
+        }
+        // Don't re-enable on PiP exit here — onResume() handles that once the app is
+        // truly foregrounded.  Re-enabling while still backgrounded (e.g. on lock screen)
+        // would let a focus-loss event pause playback immediately.
+
         if (!isInPIP) {
             // Fix partially disappeared buttons after exit from PIP???
             notifyPlaybackRowChanged();

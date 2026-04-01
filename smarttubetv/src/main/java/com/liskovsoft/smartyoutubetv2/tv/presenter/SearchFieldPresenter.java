@@ -42,10 +42,12 @@ public class SearchFieldPresenter extends Presenter {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View contentView = inflater.inflate(R.layout.search_field, parent, false);
 
+        Context context = parent.getContext();
         EditText editField = contentView.findViewById(R.id.simple_edit_value);
         ViewUtil.setDimensions(editField, mWidth, -1); // don't do auto height
         contentView.setOnFocusChangeListener((v, hasFocus) -> {
             Log.d(TAG, "On edit field focused");
+            contentView.setBackgroundResource(hasFocus ? R.drawable.touch_input_background_active : R.drawable.touch_input_background);
             if (hasFocus) {
                 editField.requestFocus();
             }
