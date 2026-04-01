@@ -1,6 +1,7 @@
 package com.liskovsoft.smartyoutubetv2.tv.ui.browse.video;
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.leanback.widget.OnItemViewSelectedListener;
@@ -8,6 +9,7 @@ import androidx.leanback.widget.Presenter;
 import androidx.leanback.widget.Row;
 import androidx.leanback.widget.RowPresenter;
 import androidx.leanback.widget.VerticalGridPresenter;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.liskovsoft.smartyoutubetv2.common.app.models.data.Video;
 import com.liskovsoft.smartyoutubetv2.common.app.models.data.VideoGroup;
@@ -71,6 +73,38 @@ public class VideoGridFragment extends GridFragment implements VideoSection {
         setOnItemViewClickedListener(new ItemViewClickedListener());
         setOnItemViewSelectedListener(new ItemViewSelectedListener());
         mCardPresenter.setOnItemViewLongPressedListener(new ItemViewLongPressedListener());
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        attachScrollListener();
+    }
+
+    private void attachScrollListener() {
+        if (getBrowseGrid() == null) return;
+        getBrowseGrid().addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                if (mGridAdapter == null || mGridAdapter.isEmpty() || mMainPresenter == null) return;
+                if (mMainPresenter.hasPendingActions()) return;
+                int size = mGridAdapter.size();
+                int lastVisible = -1;
+                for (int i = recyclerView.getChildCount() - 1; i >= 0; i--) {
+                    int pos = recyclerView.getChildAdapterPosition(recyclerView.getChildAt(i));
+                    if (pos != RecyclerView.NO_POSITION && pos > lastVisible) {
+                        lastVisible = pos;
+                    }
+                }
+                int threshold = isShorts() ? ViewUtil.GRID_SCROLL_CONTINUE_NUM * 2 : ViewUtil.GRID_SCROLL_CONTINUE_NUM;
+                if (lastVisible > size - threshold) {
+                    Object last = mGridAdapter.get(size - 1);
+                    if (last instanceof Video) {
+                        mMainPresenter.onScrollEnd((Video) last);
+                    }
+                }
+            }
+        });
     }
 
     private void applyPendingUpdates() {
