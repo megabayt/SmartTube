@@ -151,6 +151,7 @@ android {
     lintOptions {
         abortOnError true
         //checkReleaseBuilds false // fix for ClassNotFoundException: com.android.tools.lint.client.api.Vendor
+        disable 'MissingDefaultResource' // values-port overrides leanback library dimens (defined in library, not app)
     }
 
     // gradle 4.6 migration: disable dimensions mechanism
