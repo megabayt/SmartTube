@@ -2,9 +2,12 @@ package com.liskovsoft.smartyoutubetv2.tv.ui.dialogs;
 
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
+import android.graphics.Rect;
 import android.os.Build.VERSION;
 import android.os.Bundle;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
+import android.view.View;
 
 import androidx.fragment.app.Fragment;
 
@@ -52,6 +55,24 @@ public class AppDialogActivity extends MotherActivity {
         if (VERSION.SDK_INT != 26) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         }
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_DOWN && isTouchOutsideDialog(event)) {
+            finish();
+            return true;
+        }
+        return super.dispatchTouchEvent(event);
+    }
+
+    private boolean isTouchOutsideDialog(MotionEvent event) {
+        if (mFragment == null || mFragment.getView() == null) return false;
+        View panel = mFragment.getView().findViewById(R.id.settings_preference_fragment_container);
+        if (panel == null) return false;
+        Rect bounds = new Rect();
+        panel.getGlobalVisibleRect(bounds);
+        return !bounds.contains((int) event.getRawX(), (int) event.getRawY());
     }
 
     @Override
