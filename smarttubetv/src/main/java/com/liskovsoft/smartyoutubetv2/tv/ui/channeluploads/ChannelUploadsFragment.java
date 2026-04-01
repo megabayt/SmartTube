@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.leanback.widget.VerticalGridView;
+import com.liskovsoft.smartyoutubetv2.common.app.models.data.Video;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.ChannelUploadsPresenter;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.interfaces.VideoGroupPresenter;
 import com.liskovsoft.smartyoutubetv2.common.app.views.ChannelUploadsView;
@@ -34,6 +35,15 @@ public class ChannelUploadsFragment extends VideoGridFragment implements Channel
     @Override
     protected VideoGroupPresenter getMainPresenter() {
         return ChannelUploadsPresenter.instance(getContext());
+    }
+
+    @Override
+    protected int getColumnCount() {
+        Video channel = ChannelUploadsPresenter.instance(getContext()).getChannel();
+        if (channel != null && "WL".equals(channel.playlistId)) {
+            return 1;
+        }
+        return super.getColumnCount();
     }
 
     @Override
