@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -100,6 +101,21 @@ public class BrowseFragment extends BrowseSupportFragment implements BrowseView 
         if (navBtn != null) {
             navBtn.setOnClickListener(v -> startHeadersTransitionSafe(true));
         }
+
+        // Dismiss headers by tapping the content area (fires only when no child consumes the touch)
+        root.setOnTouchListener((v, event) -> {
+            if (event.getActionMasked() == MotionEvent.ACTION_UP && isShowingHeaders()) {
+                View headersDock = root.findViewById(R.id.browse_headers_dock);
+                if (headersDock != null) {
+                    int[] loc = new int[2];
+                    headersDock.getLocationOnScreen(loc);
+                    if (event.getRawX() > loc[0] + headersDock.getWidth()) {
+                        startHeadersTransitionSafe(false);
+                    }
+                }
+            }
+            return false;
+        });
 
         return root;
     }
