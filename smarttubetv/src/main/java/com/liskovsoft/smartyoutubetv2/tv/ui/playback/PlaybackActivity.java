@@ -2,6 +2,7 @@ package com.liskovsoft.smartyoutubetv2.tv.ui.playback;
 
 import android.annotation.TargetApi;
 import android.app.PictureInPictureParams;
+import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.InputDevice;
@@ -37,15 +38,26 @@ public class PlaybackActivity extends LeanbackActivity {
     private boolean gamepadTriggerPressed = false;
     private PlaybackFragment mPlaybackFragment;
     private boolean mIsBackPressed;
+    private int mCurrentOrientation = Configuration.ORIENTATION_UNDEFINED;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fragment_playback);
+        mCurrentOrientation = getResources().getConfiguration().orientation;
         Fragment fragment =
                 getSupportFragmentManager().findFragmentByTag(getString(R.string.playback_tag));
         if (fragment instanceof PlaybackFragment) {
             mPlaybackFragment = (PlaybackFragment) fragment;
+        }
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if (newConfig.orientation != mCurrentOrientation && !isInPipMode()) {
+            mCurrentOrientation = newConfig.orientation;
+            recreate();
         }
     }
 
