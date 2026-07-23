@@ -4,7 +4,6 @@ import androidx.fragment.app.Fragment;
 import androidx.leanback.app.BrowseSupportFragment;
 import androidx.leanback.widget.HeaderItem;
 import androidx.leanback.widget.Row;
-import com.liskovsoft.mediaserviceinterfaces.data.MediaGroup;
 import com.liskovsoft.sharedutils.mylogger.Log;
 import com.liskovsoft.smartyoutubetv2.common.app.models.data.BrowseSection;
 import com.liskovsoft.smartyoutubetv2.common.app.models.data.SettingsGroup;
@@ -19,7 +18,6 @@ import com.liskovsoft.smartyoutubetv2.tv.ui.browse.interfaces.VideoSection;
 import com.liskovsoft.smartyoutubetv2.tv.ui.browse.settings.SettingsGridFragment;
 import com.liskovsoft.smartyoutubetv2.tv.ui.browse.video.MultiVideoGridFragment;
 import com.liskovsoft.smartyoutubetv2.tv.ui.browse.video.ShortsGridFragment;
-import com.liskovsoft.smartyoutubetv2.tv.ui.browse.video.SubscriptionsGridFragment;
 import com.liskovsoft.smartyoutubetv2.tv.ui.browse.video.VideoGridFragment;
 import com.liskovsoft.smartyoutubetv2.tv.ui.browse.video.VideoRowsFragment;
 
@@ -55,7 +53,6 @@ public class BrowseSectionFragmentFactory extends BrowseSupportFragment.Fragment
         Row row = (Row) rowObj;
 
         HeaderItem header = row.getHeaderItem();
-        BrowseSection section = header instanceof SectionHeaderItem ? ((SectionHeaderItem) header).getSection() : null;
 
         if (header instanceof SectionHeaderItem) {
             mFragmentType = ((SectionHeaderItem) header).getType();
@@ -68,9 +65,7 @@ public class BrowseSectionFragmentFactory extends BrowseSupportFragment.Fragment
                 fragment = new VideoRowsFragment();
                 break;
             case BrowseSection.TYPE_GRID:
-                fragment = section != null && section.getId() == MediaGroup.TYPE_SUBSCRIPTIONS ?
-                        new SubscriptionsGridFragment() :
-                        new VideoGridFragment();
+                fragment = new VideoGridFragment();
                 break;
             case BrowseSection.TYPE_SHORTS_GRID:
                 fragment = new ShortsGridFragment();

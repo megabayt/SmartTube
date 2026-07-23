@@ -1,6 +1,7 @@
 package com.liskovsoft.smartyoutubetv2.tv.ui.browse.video;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.util.DisplayMetrics;
 import android.util.Pair;
@@ -24,6 +25,15 @@ public class GridFragmentHelper {
     private static void invalidate() {
         sCardDimensPx.clear();
         sMaxColsNum.clear();
+    }
+
+    /**
+     * Grids are sized from the longest screen edge (see {@link #getMaxColsNumFloatInt}), so in portrait
+     * the calculated cards don't fit the screen. Used to fall back to a single column layout.
+     */
+    public static boolean isPortrait(Context context) {
+        return context != null &&
+                context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
     }
 
     /**

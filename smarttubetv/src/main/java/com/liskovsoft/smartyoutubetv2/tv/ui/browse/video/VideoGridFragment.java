@@ -135,6 +135,13 @@ public class VideoGridFragment extends GridFragment implements VideoSection {
     }
 
     protected int getColumnCount() {
+        // Cards calculated for the landscape width don't fit the portrait screen.
+        // Show a single column instead, same as the Subscriptions section.
+        // NOTE: shorts cards are narrow enough to keep the calculated layout.
+        if (!isShorts() && GridFragmentHelper.isPortrait(getContext())) {
+            return 1;
+        }
+
         return GridFragmentHelper.getMaxColsNum(getContext(), isShorts() ? R.dimen.shorts_card_width : R.dimen.card_width, mVideoGridScale);
     }
 
